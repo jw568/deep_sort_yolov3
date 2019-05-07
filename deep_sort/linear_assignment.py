@@ -11,6 +11,7 @@ INFTY_COST = 1e+5
 def min_cost_matching(
         distance_metric, max_distance, tracks, detections, track_indices=None,
         detection_indices=None):
+    #print ("Doing min_cost_match: ", detections)
     """Solve linear assignment problem.
 
     Parameters

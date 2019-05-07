@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore')
 def main(yolo):
 
    # Definition of the parameters
-    max_cosine_distance = 0.3
+    max_cosine_distance = 0.2
     nn_budget = None
     nms_max_overlap = 1.0
     
@@ -32,7 +32,7 @@ def main(yolo):
     encoder = gdet.create_box_encoder(model_filename,batch_size=1)
     
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-    tracker = Tracker(metric)
+    tracker = Tracker(metric, max_iou_distance = 0.3, max_age = 180)
 
     writeVideo_flag = True 
     
@@ -63,7 +63,7 @@ def main(yolo):
         # score to 1.0 here).
         detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
         
-        # Run non-maxima suppression.
+        # Run non-maxima suppression. gets rid of annoying overlapping BB's that are likely the same object
         boxes = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
@@ -102,7 +102,11 @@ def main(yolo):
         # Press Q to stop!
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+        """
+        Loop End
+        
+        """
+    
     video_capture.release()
     if writeVideo_flag:
         out.release()

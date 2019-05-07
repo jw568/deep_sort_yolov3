@@ -64,7 +64,7 @@ class Track:
     """
 
     def __init__(self, mean, covariance, track_id, n_init, max_age,
-                 feature=None):
+                 feature=None, IDnum=None):
         self.mean = mean
         self.covariance = covariance
         self.track_id = track_id
@@ -79,6 +79,7 @@ class Track:
 
         self._n_init = n_init
         self._max_age = max_age
+        print ("Initializing track_id: ", track_id)
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -135,6 +136,7 @@ class Track:
             The associated detection.
 
         """
+        print ("Updating track_id: ", self.track_id)
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
         self.features.append(detection.feature)
@@ -143,14 +145,22 @@ class Track:
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
+      
+
 
     def mark_missed(self):
         """Mark this track as missed (no association at the current time step).
         """
-        if self.state == TrackState.Tentative:
+        #if self.state == TrackState.Tentative:
+        #   self.state = TrackState.Deleted
+        #elif self.time_since_update > self._max_age:
+        print ("Missed track_id: ", self.track_id)
+        
+        if TrackState.Tentative and self.time_since_update > self._max_age: 
             self.state = TrackState.Deleted
         elif self.time_since_update > self._max_age:
-            self.state = TrackState.Deleted
+            self.state = TrackState.Tentative
+            self.time_since_update = 0
 
     def is_tentative(self):
         """Returns True if this track is tentative (unconfirmed).
