@@ -140,6 +140,7 @@ class Track:
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
         self.features.append(detection.feature)
+        print ("Track_id: ", self.track_id," has ", len(self.features), " features")
 
         self.hits += 1
         self.time_since_update = 0

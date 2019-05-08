@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore')
 def main(yolo):
 
    # Definition of the parameters
-    max_cosine_distance = 0.2
+    max_cosine_distance = 0.3
     nn_budget = None
     nms_max_overlap = 1.0
     

@@ -86,7 +86,8 @@ class Tracker:
                 continue
             features += track.features
             targets += [track.track_id for _ in track.features]
-            track.features = []
+            if (len(track.features) > 10):
+                del track.features[2]
         self.metric.partial_fit(
             np.asarray(features), np.asarray(targets), active_targets)
 
