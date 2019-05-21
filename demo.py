@@ -3,25 +3,26 @@
 
 from __future__ import division, print_function, absolute_import
 
-import os
 from timeit import time
 import warnings
-import sys
 import cv2
 import numpy as np
 from PIL import Image
 from yolo import YOLO
-
+import cPickle
 from deep_sort import preprocessing
 from deep_sort import nn_matching
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
-from deep_sort.detection import Detection as ddet
 warnings.filterwarnings('ignore')
 
 def main(yolo):
-
+    
+    # Define person(s) of interest from pickle load
+    pickle_in = open("pickledump1.pickle","rb")
+    person_of_interest = cPickle.load(pickle_in)
+    pickle_in.close()
    # Definition of the parameters
     max_cosine_distance = 0.3
     nn_budget = None
@@ -59,7 +60,6 @@ def main(yolo):
         boxs = yolo.detect_image(image)
        # print("box_num",len(boxs))
         features = encoder(frame,boxs)
-        
         # score to 1.0 here).
         detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
         
@@ -79,10 +79,14 @@ def main(yolo):
             bbox = track.to_tlbr()
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
             cv2.putText(frame, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
-
         for det in detections:
+            feature_array = toFloatArray(det.feature)
+            POI_array = toFloatArray(person_of_interest)
             bbox = det.to_tlbr()
             cv2.rectangle(frame,(int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,0,0), 2)
+            print("cos distance w POI: \n {} \n" .format(nn_matching._cosine_distance([feature_array], [POI_array])))
+            if(nn_matching._cosine_distance([feature_array], [POI_array]) < max_cosine_distance):
+                cv2.putText(frame, "Person Of Interest",(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
             
         cv2.imshow('', frame)
         
@@ -112,6 +116,18 @@ def main(yolo):
         out.release()
         list_file.close()
     cv2.destroyAllWindows()
+    
+def toFloatArray(inp):
+    temp = [str(i) for i in inp]
+    lol = []
+    ret = []
+    for entree in temp:
+        lol.append(entree.split(' '))
+    for i in lol:
+        ret.append(float(i[0]))
+    print(ret)
+    return ret
+    
 
 if __name__ == '__main__':
     main(YOLO())

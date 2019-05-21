@@ -30,7 +30,7 @@ def _pdist(a, b):
 
 def _cosine_distance(a, b, data_is_normalized=False):
     """Compute pair-wise cosine distance between points in `a` and `b`.
-
+    
     Parameters
     ----------
     a : array_like
